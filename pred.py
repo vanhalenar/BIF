@@ -21,17 +21,17 @@ leaves = {clade.name: value for clade, value in leaves.items()}
 # print (msa[0].seq)
 
 msa = AlignIO.read("msa.fasta", "fasta")
-length = msa.get_alignment_length()
+alignment_length = msa.get_alignment_length()
 
 # print(msa)
 
 aminoacids = "ARNDCQEGHILKMFPSTWYV"
 
-conservation_scores = [{x: 0 for x in aminoacids} for _ in range(length)]
+conservation_scores = [{x: 0 for x in aminoacids} for _ in range(alignment_length)]
 
 # print(conservation_scores[0].keys())
 
-for i in range(length):
+for i in range(alignment_length):
     column = msa[:, i]
     for a in aminoacids:
         score_u = 0
@@ -88,9 +88,9 @@ for prop in [hydrophobicity, polarity, helix_frequency]:
 
 query = msa[0]
 
-results = [[0] * length for _ in range(len(aminoacids))]
+results = [[0] * alignment_length for _ in range(len(aminoacids))]
 
-for i in range(length):
+for i in range(alignment_length):
     column = msa[:, i]
     original_aminoacid = query.seq[i]
     if original_aminoacid == "-":
@@ -107,11 +107,12 @@ for i in range(length):
 # output
 
 
-os.remove("output.csv")
+if os.path.isfile("output.csv"):
+    os.remove("output.csv")
 
 with open("output.csv", "w") as f:
     f.write("AA,")
-    f.write(",".join(str(i) for i in range(1, length+1)))
+    f.write(",".join(str(i) for i in range(1, alignment_length+1)))
     f.write("\n")
 
     for i, a in enumerate(aminoacids):
