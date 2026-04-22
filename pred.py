@@ -6,30 +6,21 @@ tree = Phylo.read("tree.tre", "newick")
 
 tree.rooted = True
 
-# might need to filter only leaves instead of all depths
-# double check if claude is right or hallucinating
-leaves : dict = tree.depths()
+leaves : dict = {clade: tree.distance(clade) for clade in tree.get_terminals()}
 
 minimum = min(leaves.values())
 maximum = max(leaves.values())
 
 leaves = {key: ((value - minimum)/(maximum-minimum)) for key, value in leaves.items()}
 leaves = {clade.name: value for clade, value in leaves.items()}
-# print(leaves)
-# msa = list(SeqIO.parse("msa.fasta", "fasta"))
-
-# print (msa[0].seq)
+print(leaves)
 
 msa = AlignIO.read("msa.fasta", "fasta")
 alignment_length = msa.get_alignment_length()
 
-# print(msa)
-
 aminoacids = "ARNDCQEGHILKMFPSTWYV"
 
 conservation_scores = [{x: 0 for x in aminoacids} for _ in range(alignment_length)]
-
-# print(conservation_scores[0].keys())
 
 for i in range(alignment_length):
     column = msa[:, i]
@@ -44,7 +35,8 @@ for i in range(alignment_length):
         score = score_u / score_d
         conservation_scores[i][a] = score
 
-# print(conservation_scores)
+print("conservation scores on query: ", conservation_scores[0])
+print("conservation scores on number 22: ", conservation_scores[21])
 
 hydrophobicity = {}
 polarity = {}
@@ -86,6 +78,10 @@ for prop in [hydrophobicity, polarity, helix_frequency]:
     for aa in prop:
         prop[aa] = (prop[aa] - mn) / (mx - mn)
 
+print("hydrophobicity: ", hydrophobicity)
+print("polarity: ", polarity)
+print("helix frequency: ", helix_frequency)
+
 query = msa[0]
 
 results = [[0] * alignment_length for _ in range(len(aminoacids))]
@@ -119,3 +115,6 @@ with open("output.csv", "w") as f:
         f.write(a + ",")
         f.write(",".join(str(v) for v in results[i]))
         f.write("\n")
+
+# What's the original amino acid at position 22 (index 21)?                                                                                                                                        
+print(f"Query amino acid at position 22: {query.seq[21]}")
